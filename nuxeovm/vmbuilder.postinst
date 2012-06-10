@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Useful for KVM virtio
+#sed -ie 's,/dev/sd,/dev/vd,g' $1/etc/fstab
+
+nuxeouid=$(grep nuxeo $1/etc/passwd | cut -d: -f3)
+nuxeogid=$(grep nuxeo $1/etc/passwd | cut -d: -f4)
+
+mkdir -p $1/var/lib/nuxeo
+
+mkdir -p $1/tmp/nuxeo-distribution
+unzip -q -d $1/tmp/nuxeo-distribution nuxeo-distribution.zip
+distdir=$(/bin/ls $1/tmp/nuxeo-distribution | head -n 1)
+mv $1/tmp/nuxeo-distribution/$distdir $1/var/lib/nuxeo/server
+rm -rf $1/tmp/nuxeo-distribution
+
+mkdir -p $1/etc/nuxeo
+mv $1/var/lib/nuxeo/server/bin/nuxeo.conf $1/etc/nuxeo/nuxeo.conf
+
+chown -R $nuxeouid:$nuxeogid $1/var/lib/nuxeo
+chown -R $nuxeouid:$nuxeogid $1/etc/nuxeo
+

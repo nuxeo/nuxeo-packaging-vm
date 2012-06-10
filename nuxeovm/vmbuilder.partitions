@@ -1,0 +1,3 @@
+root 10240
+#Uncomment to add swap to the VM
+#swap 2048
