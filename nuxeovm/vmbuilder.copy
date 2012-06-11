@@ -1,0 +1,4 @@
+BUILDDIR/files/nuxeo.init /etc/init.d/nuxeo
+BUILDDIR/files/nuxeo.apache2 /etc/apache2/sites-available/nuxeo
+BUILDDIR/files/showaddress /sbin/showaddress
+BUILDDIR/files/tty1.conf /etc/init/tty1.conf

@@ -3,11 +3,13 @@
 cd "$(dirname $0)"
 
 usage() {
-    echo "Usage: $0 [-v version|-d distrib]"
+    echo "Usage: $0 <-v version> [-d distrib]"
     echo
     echo "OPTIONS:"
-    echo "  -v version  Nuxeo version (downloaded from maven repo)"
+    echo "  -v version  Nuxeo version"
     echo "  -d distrib  Nuxeo distribution (local zip file)"
+    echo
+    echo "If -d is not specified, the distribution will be downloaded from a maven repository."
 }
 
 version=""
@@ -37,15 +39,8 @@ do
     esac
 done
 
-if [ -z "$version" ] && [ -z "$distrib" ]; then
-    echo "ERROR: One of -v or -d must be specified"
-    echo
-    usage
-    exit 1
-fi
-
-if [ ! -z "$version" ] && [ ! -z "$distrib" ]; then
-    echo "ERROR: Only one of -v or -d can be specified"
+if [ -z "$version" ]; then
+    echo "ERROR: Missing version."
     echo
     usage
     exit 1
@@ -88,8 +83,8 @@ mkdir build
 cp -r nuxeovm/* build/
 
 # Download/copy distribution
-if [ ! -z "$version" ]; then
-    mvn org.apache.maven.plugins:maven-dependency-plugin:2.4:get -Dartifact=org.nuxeo.ecm.distribution:nuxeo-distribution-tomcat:${version}:zip:nuxeo-cap -Ddest=build/nuxeo-distribution.zip
+if [ -z "$distrib" ]; then
+    mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.4:get -Dartifact=org.nuxeo.ecm.distribution:nuxeo-distribution-tomcat:${version}:zip:nuxeo-cap -Ddest=build/nuxeo-distribution.zip
 else
     cp "$distrib" build/nuxeo-distribution.zip
 fi

@@ -1,0 +1,66 @@
+#!/bin/bash
+
+PATH=/usr/sbin:/sbin:/usr/bin:/bin
+PRODUCT=nuxeo
+NAME="Nuxeo"
+USER=nuxeo
+CHECKFILE=/tmp/netcheck.txt
+
+setterm -blank 0
+echo -n 0 > $CHECKFILE
+
+check_ip_port() {
+
+    ip=$1
+    port=$2
+    allips=""
+    RET=false
+    if [ "$ip" = "0.0.0.0" ] || [ "$ip" = "::" ]; then
+        allips="(.*)"
+    elif [ "$ip" = "127.0.0.1" ] || [ "$ip" = "::1" ]; then
+        allips="(0.0.0.0|::|127.0.0.1|::1)"
+    else
+        allips="(0.0.0.0|::|$ip)"
+    fi
+    conflicts=$(netstat -nlt | awk '{print $4}' | grep -E "^$allips:$port$")
+    if [ -z "$conflicts" ]; then
+        RET=true
+    fi
+
+}
+
+while true
+do
+  check_ip_port 127.0.0.1 8080
+  if [ $RET == false ]; then
+    NXSTARTED="1"
+  else
+    NXSTARTED="0"
+  fi
+  NXPID=`pgrep -u $USER java`
+  IPADDR=`ifconfig | grep "inet addr:" | grep -v "127.0.0.1" | cut -d: -f2 | awk '{print $1}'`
+  if [ $IPADDR"x" == "x" ]; then
+    count=$(($(cat $CHECKFILE) + 1))
+    echo -n $count > $CHECKFILE
+    if [ $count -gt 3 ]; then
+      invoke-rc.d networking restart > /dev/null 2>&1 &
+      echo -n 0 > $CHECKFILE
+      MSG="Restarting network (no IP address found after 30 seconds)"
+    else
+      MSG="Waiting for network to come up (no IP address found)"
+    fi
+  elif [ $NXPID"x" == "x" ]; then
+    MSG="$NAME is not running"
+  elif [ $NXSTARTED == "0" ]; then
+    MSG="$NAME is starting"
+  else
+    MSG="$NAME is running on http://$IPADDR/\nType this URL in your browser's address bar\nThe default login and password are: Administrator"
+  fi
+  MSG2="\n$MSG\n\nRefreshing in ..."
+  dialog --ok-label "Force refresh" --cancel-label "Shutdown the VM" --title "Hit Alt-F2 for a console" --pause "$MSG2" 13 70 10
+  status=$?
+  if [ $status == 1 ]; then
+    /sbin/shutdown -h now
+  fi
+done
+

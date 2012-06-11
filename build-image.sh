@@ -12,6 +12,7 @@ pushd $builddir
 
 echo "*** Starting image build"
 perl -p -i -e "s,BUILDDIR,$builddir,g" vmbuilder.cfg
+perl -p -i -e "s,BUILDDIR,$builddir,g" vmbuilder.copy
 vmbuilder kvm ubuntu --config vmbuilder.cfg
 
 # Check result
