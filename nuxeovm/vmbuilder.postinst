@@ -40,6 +40,7 @@ nuxeo.bind.address=127.0.0.1
 nuxeo.server.http.port=8080
 nuxeo.server.ajp.port=0
 nuxeo.wizard.done=false
+nuxeo.wizard.skippedpages=General,DB
 EOF
 
 

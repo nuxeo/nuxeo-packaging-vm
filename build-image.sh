@@ -23,6 +23,7 @@ if [ "$?" != "0" ]; then
     echo "*** Image build: FAILURE"
     exit 1
 fi
+
 # Cleanup
 mv ubuntu-kvm/tmp*.qcow2 nuxeovm.qcow2
 if [ -n "$SUDO_UID" ]; then
