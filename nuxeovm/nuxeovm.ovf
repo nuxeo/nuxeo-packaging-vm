@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ovf:Envelope xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:vmw="http://www.vmware.com/schema/ovf">
+  <References>
+    <File ovf:href="nuxeovm.vmdk" ovf:size="@@SIZE@@" ovf:id="nuxeovm.vmdk_id"/>
+  </References>
+  <NetworkSection>
+    <Info>List of logical networks used in the package</Info>
+    <Network ovf:name="Network 1">
+      <Description>Network 1</Description>
+    </Network>
+  </NetworkSection>
+  <vmw:IpAssignmentSection ovf:required="false" vmw:protocols="IPv4,IPv6" vmw:schemes="">
+    <Info>Supported IP assignment schemes</Info>
+  </vmw:IpAssignmentSection>
+  <DiskSection>
+    <Info>List of the virtual disks and partitions needed</Info>
+    <Disk ovf:diskId="nuxeovm" ovf:capacity="10240" ovf:capacityAllocationUnits="byte * 2^20" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#monolithicSparse" ovf:fileRef="nuxeovm.vmdk_id" ovf:populatedSize="@@SIZE@@"/>
+  </DiskSection>
+  <VirtualSystem ovf:id="Nuxeo">
+    <Info>A virtual machine</Info>
+    <ProductSection ovf:required="false">
+      <Info>VM ISV branding information</Info>
+      <Product>Nuxeo</Product>
+      <Vendor>Nuxeo</Vendor>
+      <!--
+            Version is the actual product version in the
+            form X.X.X.X where X is an unsigned 16-bit integer.
+
+            FullVersion is a descriptive version string
+            including, for example, alpha or beta designations
+            and other release criteria.
+        -->
+      <Version>5.6.0.0</Version>
+      <FullVersion>@@VERSION@@</FullVersion>
+      <ProductUrl>http://www.nuxeo.com/en/products</ProductUrl>
+      <VendorUrl>http://www.nuxeo.com/</VendorUrl>
+      <AppUrl>http://${vami.ip0.Nuxeo}/</AppUrl>
+      <Category>Application</Category>
+    </ProductSection>
+    <ProductSection ovf:class="vami" ovf:instance="Nuxeo" ovf:required="false">
+      <Info>VAMI Properties</Info>
+      <Category>Networking Properties</Category>
+      <Property ovf:key="gateway" ovf:userConfigurable="true" ovf:type="string">
+        <Label>Default Gateway</Label>
+        <Description>The default gateway address for this VM. Leave blank if DHCP is desired.</Description>
+      </Property>
+      <Property ovf:key="DNS" ovf:userConfigurable="true" ovf:type="string">
+        <Label>DNS</Label>
+        <Description>The domain name servers for this VM (comma separated). Leave blank if DHCP is desired.</Description>
+      </Property>
+      <Property ovf:key="ip0" ovf:userConfigurable="true" ovf:type="string">
+        <Label>Network 1 IP Address</Label>
+        <Description>The IP address for this interface. Leave blank if DHCP is desired.</Description>
+      </Property>
+      <Property ovf:key="netmask0" ovf:userConfigurable="true" ovf:type="string">
+        <Label>Network 1 Netmask</Label>
+        <Description>The netmask or prefix for this interface. Leave blank if DHCP is desired.</Description>
+      </Property>
+    </ProductSection>
+    <ProductSection ovf:class="vm" ovf:required="false">
+      <Info>VM specific properties</Info>
+      <Property ovf:key="vmname" ovf:type="string" ovf:value="Nuxeo"/>
+    </ProductSection>
+    <AnnotationSection>
+      <Info/>
+      <Annotation/>
+    </AnnotationSection>
+    <OperatingSystemSection ovf:id="93" ovf:version="" vmw:osType="ubuntuGuest">
+      <Info>Guest Operating System</Info>
+      <Description>Ubuntu 12.04</Description>
+    </OperatingSystemSection>
+    <VirtualHardwareSection ovf:transport="com.vmware.guestInfo" ovf:required="false">
+      <Info>Virtual Hardware Requirements</Info>
+      <System>
+        <vssd:ElementName>Virtual Hardware Family</vssd:ElementName>
+        <vssd:InstanceID>0</vssd:InstanceID>
+        <vssd:VirtualSystemType>vmx-04</vssd:VirtualSystemType>
+      </System>
+      <Item>
+        <rasd:AllocationUnits>hertz * 10^6</rasd:AllocationUnits>
+        <rasd:Description>Number of virtual CPUs</rasd:Description>
+        <rasd:ElementName xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">2 virtual CPU</rasd:ElementName>
+        <rasd:InstanceID xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">1</rasd:InstanceID>
+        <rasd:ResourceType>3</rasd:ResourceType>
+        <rasd:VirtualQuantity>2</rasd:VirtualQuantity>
+      </Item>
+      <Item>
+        <rasd:AllocationUnits>byte * 2^20</rasd:AllocationUnits>
+        <rasd:Description>Memory Size</rasd:Description>
+        <rasd:ElementName xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">2048 MB of memory</rasd:ElementName>
+        <rasd:InstanceID xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">2</rasd:InstanceID>
+        <rasd:ResourceType>4</rasd:ResourceType>
+        <rasd:VirtualQuantity>2048</rasd:VirtualQuantity>
+      </Item>
+      <Item>
+        <rasd:AutomaticAllocation>true</rasd:AutomaticAllocation>
+        <rasd:Connection>Network 1</rasd:Connection>
+        <rasd:ElementName xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">Ethernet adapter on vmnet</rasd:ElementName>
+        <rasd:InstanceID xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">3</rasd:InstanceID>
+        <rasd:ResourceSubType>PCNet32</rasd:ResourceSubType>
+        <rasd:ResourceType>10</rasd:ResourceType>
+      </Item>
+      <Item>
+        <rasd:Address xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">0</rasd:Address>
+        <rasd:ElementName xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">SCSI Controller 0  - lsilogic</rasd:ElementName>
+        <rasd:InstanceID xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">4</rasd:InstanceID>
+        <rasd:ResourceSubType>lsilogic</rasd:ResourceSubType>
+        <rasd:ResourceType>6</rasd:ResourceType>
+      </Item>
+      <Item>
+        <rasd:AddressOnParent>0</rasd:AddressOnParent>
+        <rasd:ElementName xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">Harddisk 1</rasd:ElementName>
+        <rasd:HostResource>ovf:/disk/nuxeovm</rasd:HostResource>
+        <rasd:InstanceID xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">5</rasd:InstanceID>
+        <rasd:Parent>4</rasd:Parent>
+        <rasd:ResourceType>17</rasd:ResourceType>
+      </Item>
+      <vmw:Config ovf:required="false" vmw:key="tools.syncTimeWithHost" vmw:value="TRUE"/>
+    </VirtualHardwareSection>
+  </VirtualSystem>
+</ovf:Envelope>

@@ -1,0 +1,2 @@
+SHA1(nuxeomv.ovf)= @@OVFSHA1@@
+SHA1(nuxeovm.vmdk)= @@VMDKSHA1@@
