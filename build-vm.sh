@@ -65,11 +65,11 @@ if [ -z "$qemuimg" ]; then
     echo "Missing: qemu-img (package qemu-utils)"
 fi
 # Comment for interactive sudo
-#sudo -n ls >/dev/null 2>/dev/null
-#if [ "$?" != "0" ]; then
-#    reqsok=false
-#    echo "Passwordless sudo not enabled"
-#fi
+sudo -n ls >/dev/null 2>/dev/null
+if [ "$?" != "0" ]; then
+    reqsok=false
+    echo "Passwordless sudo not enabled"
+fi
 
 if [ "$reqsok" != "true" ]; then
     exit 1
@@ -130,16 +130,17 @@ if [ "$success" != "true" ]; then
 fi
 
 # Convert to VMDK
-qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicSparse build/nuxeovm.qcow2 build/nuxeovm.vmdk
+qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat build/nuxeovm.qcow2 build/nuxeovm.vmdk
 
 # Adjust .ovf and .vmx files
 size=$(du -b build/nuxeovm.vmdk | awk '{print $1}')
 perl -p -i -e "s/\@\@SIZE\@\@/$size/g" build/nuxeovm.ovf
 perl -p -i -e "s/\@\@VERSION\@\@/$version/g" build/nuxeovm.ovf
-ovfsha1=$(sha1sum build/nuxeovm.ovf | awk '{print $1}')
-vmdksha1=$(sha1sum build/nuxeovm.vmdk | awk '{print $1}')
-perl -p -i -e "s/\@\@OVFSHA1\@\@/$ovfsha1/g" build/nuxeovm.mf
-perl -p -i -e "s/\@\@VMDKSHA1\@\@/$vmdksha1/g" build/nuxeovm.mf
+# Disable checksum checking : VirtualBox doesn't like my correct ones
+#ovfsha1=$(sha1sum build/nuxeovm.ovf | awk '{print $1}')
+#vmdksha1=$(sha1sum build/nuxeovm.vmdk | awk '{print $1}')
+#perl -p -i -e "s/\@\@OVFSHA1\@\@/$ovfsha1/g" build/nuxeovm.mf
+#perl -p -i -e "s/\@\@VMDKSHA1\@\@/$vmdksha1/g" build/nuxeovm.mf
 
 # Prepare zip
 zipdir="nuxeo-$version-vm"
@@ -148,7 +149,12 @@ if [ -d "output/$zipdir" ]; then
 fi
 mkdir -p output/$zipdir
 mv build/nuxeovm.vmdk output/$zipdir/
+mv build/nuxeovm-flat.vmdk output/$zipdir/
 mv build/nuxeovm.ovf output/$zipdir/
 mv build/nuxeovm.vmx output/$zipdir/
-mv build/nuxeovm.mf output/$zipdir/
+#mv build/nuxeovm.mf output/$zipdir/
+
+pushd output
+zip -r $zipdir.zip $zipir
+popd
 
