@@ -105,7 +105,7 @@ while [ "$success" != "true" ] && [ "$retries" -lt "$max_retries" ]; do
         # (vmbuilder sometimes creates non-bootable ones)
         # -> Check if we can ping it (name is bound to the mac adress in the local network config)
         cp -f build/nuxeovm.qcow2 build/pingtest.qcow2
-        sudo kvm -hda build/pingtest.qcow2 -smp 2 -m 2048 -net nic,macaddr=52:54:00:12:34:56 -net tap,script=/etc/qemu-ifup -vnc :2 -daemonize
+        sudo kvm -hda build/pingtest.qcow2 -smp 2 -m 2047 -net nic,macaddr=52:54:00:12:34:56 -net tap,script=/etc/qemu-ifup -vnc :2 -daemonize
         # Wait 2 minutes for the VM to boot up
         echo "Waiting 2 minutes for VM to boot up"
         sleep 120
