@@ -144,9 +144,7 @@ perl -p -i -e "s/\@\@VERSION\@\@/$version/g" build/nuxeovm.ovf
 
 # Prepare zip
 zipdir="nuxeo-$version-vm"
-if [ -d "output/$zipdir" ]; then
-    rm -rf "output/$zipdir"
-fi
+rm -rf output
 mkdir -p output/$zipdir
 mv build/nuxeovm.vmdk output/$zipdir/
 mv build/nuxeovm-flat.vmdk output/$zipdir/
@@ -155,6 +153,6 @@ mv build/nuxeovm.vmx output/$zipdir/
 #mv build/nuxeovm.mf output/$zipdir/
 
 pushd output
-zip -r $zipdir.zip $zipir
+zip -r $zipdir.zip $zipdir
 popd
 
