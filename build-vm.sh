@@ -85,6 +85,10 @@ cp -r nuxeovm/* build/
 # Download/copy distribution
 if [ -z "$distrib" ]; then
     mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.4:get -Dartifact=org.nuxeo.ecm.distribution:nuxeo-distribution-tomcat:${version}:zip:nuxeo-cap -Ddest=build/nuxeo-distribution.zip -Dtransitive=false
+    if [ "$?" != "0" ]; then
+        echo "ERROR: Unable to download distribution"
+        exit 1
+    fi
 else
     cp "$distrib" build/nuxeo-distribution.zip
 fi
@@ -155,4 +159,8 @@ mv build/nuxeovm.vmx output/$zipdir/
 pushd output
 zip -r $zipdir.zip $zipdir
 popd
+
+# Cleanup
+rm -f build/nuxeovm.qcow2
+rm -rf output/$zipdir
 
