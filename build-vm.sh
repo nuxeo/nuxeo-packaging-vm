@@ -155,6 +155,8 @@ mv build/nuxeovm-flat.vmdk output/$zipdir/
 mv build/nuxeovm.ovf output/$zipdir/
 mv build/nuxeovm.vmx output/$zipdir/
 #mv build/nuxeovm.mf output/$zipdir/
+cp nuxeovm/files/README.txt output/$zipdir/
+
 
 pushd output
 zip -r $zipdir.zip $zipdir
