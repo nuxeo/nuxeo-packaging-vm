@@ -133,10 +133,8 @@ if [ "$success" != "true" ]; then
     exit 1
 fi
 
-# Convert to monolithic VMDK as qemu-img is bad with sparse
-qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat build/nuxeovm.qcow2 build/nuxeovm.tmp
-# Then to spare VMDK
-vboxmanage clonehd --format=VMDK --variant=Stream build/nuxeovm.tmp build/nuxeovm.vmdk
+# Convert to VMDK
+qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat build/nuxeovm.qcow2 build/nuxeovm.vmdk
 
 # Adjust .ovf and .vmx files
 size=$(du -b build/nuxeovm.vmdk | awk '{print $1}')
@@ -153,7 +151,7 @@ zipdir="nuxeo-$version-vm"
 rm -rf output
 mkdir -p output/$zipdir
 mv build/nuxeovm.vmdk output/$zipdir/
-#mv build/nuxeovm-flat.vmdk output/$zipdir/
+mv build/nuxeovm-flat.vmdk output/$zipdir/
 mv build/nuxeovm.ovf output/$zipdir/
 mv build/nuxeovm.vmx output/$zipdir/
 #mv build/nuxeovm.mf output/$zipdir/
@@ -165,6 +163,6 @@ zip -r $zipdir.zip $zipdir
 popd
 
 # Cleanup
-rm -rf build
+rm -f build/nuxeovm.qcow2
 rm -rf output/$zipdir
 
