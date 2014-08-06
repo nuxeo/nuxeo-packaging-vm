@@ -14,7 +14,7 @@
   </vmw:IpAssignmentSection>
   <DiskSection>
     <Info>List of the virtual disks and partitions needed</Info>
-    <Disk ovf:diskId="nuxeovm" ovf:capacity="10240" ovf:capacityAllocationUnits="byte * 2^20" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#monolithicFlat" ovf:fileRef="nuxeovm.vmdk_id" ovf:populatedSize="@@SIZE@@"/>
+    <Disk ovf:diskId="nuxeovm" ovf:capacity="10240" ovf:capacityAllocationUnits="byte * 2^20" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:fileRef="nuxeovm.vmdk_id" ovf:populatedSize="@@SIZE@@"/>
   </DiskSection>
   <VirtualSystem ovf:id="Nuxeo">
     <Info>A virtual machine</Info>
