@@ -5,7 +5,7 @@ START=$(date +"%s")
 cd "$(dirname $0)"
 
 usage() {
-    echo "Usage: $0 <-v version> [-d distrib] [-b builder] [-m mirror] [-c numcpus] [-r ramsize]"
+    echo "Usage: $0 <-v version> [-d distrib] [-b builder] [-m mirror] [-c numcpus] [-r ramsize] [-n]"
     echo
     echo "OPTIONS:"
     echo "  -v version  Nuxeo version"
@@ -17,8 +17,9 @@ usage() {
 
 version=""
 distrib=""
+color=""
 
-while getopts ":hv:d:b:m:c:r:" opt
+while getopts ":hv:d:b:m:c:r:n" opt
 do
     case $opt in
     h)
@@ -42,6 +43,9 @@ do
         ;;
     r)
         ram=$OPTARG
+        ;;
+    n)
+        color="-machine-readable"
         ;;
     \?)
         echo "Invalid option: -$opt" >&2
@@ -144,7 +148,7 @@ fi
 
 # Build image
 rm -rf output-$builder
-packer build -only=$builder $mirrorarg $cpusarg $memarg nuxeovm.json
+packer build -only=$builder $mirrorarg $cpusarg $memarg $color nuxeovm.json
 RETCODE=$?
 echo "Build status: $RETCODE"
 
