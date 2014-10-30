@@ -1,8 +1,7 @@
 # Nuxeo VM Generation script
 
-- create disk image with vmbuilder
-- generate OVF from template
-- generate VMX with virt-convert
+- create disk image with packer
+- generate OVF and VMX from templates
 
 Usage: ./build-vm.sh &lt;-v version> [-d distrib] [-b builder] [-m mirror] [-c numcpus] [-r ramsize]
 
