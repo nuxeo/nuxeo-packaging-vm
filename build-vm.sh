@@ -1,13 +1,16 @@
 #!/bin/bash
 
+START=$(date +"%s")
+
 cd "$(dirname $0)"
 
 usage() {
-    echo "Usage: $0 <-v version> [-d distrib]"
+    echo "Usage: $0 <-v version> [-d distrib] [-b builder] [-m mirror] [-c numcpus] [-r ramsize]"
     echo
     echo "OPTIONS:"
     echo "  -v version  Nuxeo version"
     echo "  -d distrib  Nuxeo distribution (local zip file)"
+    echo "  -b builder  Packer builder to use (default: qemu)"
     echo
     echo "If -d is not specified, the distribution will be downloaded from a maven repository."
 }
@@ -15,7 +18,7 @@ usage() {
 version=""
 distrib=""
 
-while getopts ":hv:d:" opt
+while getopts ":hv:d:b:m:c:r:" opt
 do
     case $opt in
     h)
@@ -27,6 +30,18 @@ do
         ;;
     d)
         distrib=$OPTARG
+        ;;
+    b)
+        builder=$OPTARG
+        ;;
+    m)
+        mirror=$OPTARG
+        ;;
+    c)
+        cpus=$OPTARG
+        ;;
+    r)
+        ram=$OPTARG
         ;;
     \?)
         echo "Invalid option: -$opt" >&2
@@ -46,123 +61,116 @@ if [ -z "$version" ]; then
     exit 1
 fi
 
+if [ -z "$builder" ]; then
+    builder="qemu"
+fi
+
+if [ -z "$mirror" ]; then
+    mirrorarg=""
+else
+    mirrorarg="-var mirror=$mirror"
+fi
+
+if [ -z "$cpus" ]; then
+    cpusarg=""
+else
+    cpusarg="-var cpu=$cpus"
+fi
+
+if [ -z "$ram" ]; then
+    memarg=""
+else
+    memarg="-var mem=$ram"
+fi
+
 # Check requirements
 reqsok=true
 
-vmbuilder=$(which vmbuilder)
-if [ -z "$vmbuilder" ]; then
+haspacker=$(which packer)
+if [ -z "$haspacker" ]; then
     reqsok=false
-    echo "Missing: vmbuilder (package python-vm-builder)"
+    echo "Missing: packer (http://packer.io/)"
 fi
-virtconvert=$(which virt-convert)
-if [ -z "$virtconvert" ]; then
-    reqsok=false
-    echo "Missing: virt-convert (package virtinst)"
-fi
-qemuimg=$(which qemu-img)
-if [ -z "$qemuimg" ]; then
+hasqemuimg=$(which qemu-img)
+if [ -z "$hasqemuimg" ]; then
     reqsok=false
     echo "Missing: qemu-img (package qemu-utils)"
 fi
-# Comment for interactive sudo
-sudo -n ls >/dev/null 2>/dev/null
-if [ "$?" != "0" ]; then
-    reqsok=false
-    echo "Passwordless sudo not enabled"
+if [ "x$builder" == "xqemu" ]; then
+    haskvm=$(which kvm)
+    if [ -z "$haskvm" ]; then
+        reqsok=false
+        echo "Missing: kvm (package qemu-kvm)"
+    fi
+fi
+if [ "x$builder" == "xvmware" ]; then
+    hasvmrun=$(which vmrun)
+    if [ -z "$hasvmrun" ]; then
+        reqsok=false
+        echo "Missing: vmrun (VMware Player & VIX)"
+    fi
+fi
+if [ "x$builder" == "xvirtualbox" ]; then
+    hasvbox=$(which VBoxManage)
+    if [ -z "$hasvbox" ]; then
+        reqsok=false
+        echo "Missing: VBoxManage (package virtualbox)"
+    fi
 fi
 
 if [ "$reqsok" != "true" ]; then
     exit 1
 fi
 
-# Prepare build directory
-if [ -d "build" ]; then
-    rm -rf build
+if [ "x$builder" != "xqemu" ]; then
+    echo "WARNING: Non-qemu builder selected, no post-build conversion will be done."
 fi
-mkdir build
-cp -r nuxeovm/* build/
 
 # Download/copy distribution
+if [ -d "tmp" ]; then
+    rm -rf tmp
+fi
+mkdir tmp
 if [ -z "$distrib" ]; then
-    mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.4:get -Dartifact=org.nuxeo.ecm.distribution:nuxeo-distribution-tomcat:${version}:zip:nuxeo-cap -Ddest=build/nuxeo-distribution.zip -Dtransitive=false
+    echo "Downloading distribution..."
+    mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.4:get -Dartifact=org.nuxeo.ecm.distribution:nuxeo-distribution-tomcat:${version}:zip:nuxeo-cap -Ddest=tmp/nuxeo-distribution.zip -Dtransitive=false
     if [ "$?" != "0" ]; then
         echo "ERROR: Unable to download distribution"
         exit 1
     fi
 else
-    cp "$distrib" build/nuxeo-distribution.zip
+    cp "$distrib" tmp/nuxeo-distribution.zip
 fi
 
-# Try to build the image
-success=false
-retries=0
-max_retries=5
-while [ "$success" != "true" ] && [ "$retries" -lt "$max_retries" ]; do
-    retries=$(($retries + 1))
-    sudo ./build-image.sh
-    if [ "$?" != "0" ]; then
-        # exit immediately if the image build failed
-        echo "ERROR: Image build failed"
-        break
-    else
-        # Validate that the image is bootable
-        # (vmbuilder sometimes creates non-bootable ones)
-        # -> Check if we can ping it (name is bound to the mac adress in the local network config)
-        cp -f build/nuxeovm.qcow2 build/pingtest.qcow2
-        sudo kvm -hda build/pingtest.qcow2 -smp 2 -m 2047 -net nic,macaddr=52:54:00:12:34:56 -net tap,script=/etc/qemu-ifup -vnc :2 -daemonize
-        # Wait 2 minutes for the VM to boot up
-        echo "Waiting 2 minutes for VM to boot up"
-        sleep 120
-        ping -q -w 30 -c 3 nuxeovm.in.nuxeo.com
-        if [ "$?" == "0" ]; then
-            success=true
-        fi
-        kvmpid=$(ps auwx | grep '52:54:00:12:34:56' | grep -v grep | awk '{print $2}')
-        if [ -n "$kvmpid" ]; then
-            sudo kill $kvmpid
-        fi
-        if [ "$success" == "true" ]; then
-            break
-        fi
-    fi
-    echo "WARNING: Image build #$retries is not bootable"
-done
-sudo rm -f build/pingtest.qcow2 # cleanup
-if [ "$success" != "true" ]; then
-    echo "ERROR: Could not build a bootable image after #$max_retries retries - giving up"
+# Build image
+rm -rf output-$builder
+packer build -only=$builder $mirrorarg $cpusarg $memarg nuxeovm.json
+RETCODE=$?
+echo "Build status: $RETCODE"
+
+# Finish up
+END=$(date +"%s")
+DELTA=$(($END-$START))
+echo "Build took $(($DELTA / 60)) minutes and $(($DELTA % 60)) seconds."
+
+if [ "$RETCODE" != "0" ]; then
+    echo "Build failed."
     exit 1
 fi
 
-# Convert to VMDK
-qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat build/nuxeovm.qcow2 build/nuxeovm.vmdk
-
-# Adjust .ovf and .vmx files
-size=$(du -b build/nuxeovm.vmdk | awk '{print $1}')
-perl -p -i -e "s/\@\@SIZE\@\@/$size/g" build/nuxeovm.ovf
-perl -p -i -e "s/\@\@VERSION\@\@/$version/g" build/nuxeovm.ovf
-# Disable checksum checking : VirtualBox doesn't like my correct ones
-#ovfsha1=$(sha1sum build/nuxeovm.ovf | awk '{print $1}')
-#vmdksha1=$(sha1sum build/nuxeovm.vmdk | awk '{print $1}')
-#perl -p -i -e "s/\@\@OVFSHA1\@\@/$ovfsha1/g" build/nuxeovm.mf
-#perl -p -i -e "s/\@\@VMDKSHA1\@\@/$vmdksha1/g" build/nuxeovm.mf
-
-# Prepare zip
-zipdir="nuxeo-$version-vm"
-rm -rf output
-mkdir -p output/$zipdir
-mv build/nuxeovm.vmdk output/$zipdir/
-mv build/nuxeovm-flat.vmdk output/$zipdir/
-mv build/nuxeovm.ovf output/$zipdir/
-mv build/nuxeovm.vmx output/$zipdir/
-#mv build/nuxeovm.mf output/$zipdir/
-cp nuxeovm/files/README.txt output/$zipdir/
-
-
-pushd output
-zip -r $zipdir.zip $zipdir
-popd
-
-# Cleanup
-rm -f build/nuxeovm.qcow2
-rm -rf output/$zipdir
+if [ "x$builder" == "xqemu" ]; then
+    zipdir="nuxeo-$version-vm"
+    if [ -d "$zipdir" ]; then
+        rm -rf $zipdir
+    fi
+    mkdir -p $zipdir
+    # Convert to vmdk
+    qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm.qcow2 $zipdir/nuxeovm.vmdk
+    # Create archive
+    size=$(du -b $zipdir/nuxeovm.vmdk | awk '{print $1}')
+    perl -p -e "s/\@\@SIZE\@\@/$size/g" templates/nuxeovm.ovf | perl -p -e "s/\@\@VERSION\@\@/$version/g" > $zipdir/nuxeovm.ovf
+    cp templates/nuxeovm.vmx $zipdir/
+    cp templates/README.txt $zipdir/
+    zip -r ${zipdir}.zip $zipdir
+fi
 

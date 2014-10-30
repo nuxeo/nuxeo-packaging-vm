@@ -1,5 +1,5 @@
 config.version = "8"
-guestos = "ubuntu"
+guestos = "ubuntu-64"
 memsize = "2048"
 numvcpus = "2"
 scsi0.present = "true"

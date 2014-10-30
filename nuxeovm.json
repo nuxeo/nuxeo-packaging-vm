@@ -1,0 +1,117 @@
+{
+    "variables": {
+        "mirror": "netboot.in.nuxeo.com",
+        "cpu": "2",
+        "mem": "2048"
+    },
+    "builders": [
+        {   "type": "vmware-iso",
+            "name": "vmware",
+            "iso_url": "http://releases.ubuntu.com/releases/14.04.1/ubuntu-14.04.1-server-amd64.iso",
+            "iso_checksum": "ca2531b8cd79ea5b778ede3a524779b9",
+            "iso_checksum_type": "md5",
+            "guest_os_type": "linux",
+            "headless": true,
+            "http_directory": ".",
+            "vm_name": "nuxeovm",
+            "vmdk_name": "nuxeovm",
+            "vmx_data": {
+                "numvcpus": "{{ user `cpu` }}",
+                "memsize": "{{ user `mem` }}"
+            },
+            "ssh_username": "nuxeo",
+            "ssh_password": "nuxeo",
+            "ssh_wait_timeout": "600s",
+            "shutdown_command": "sudo shutdown -P now",
+            "boot_command" : [
+                "<esc><esc><enter><wait>",
+                "/install/vmlinuz noapic ",
+                "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed_ubuntu.cfg ",
+                "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
+                "hostname=nuxeovm ",
+                "fb=false debconf/frontend=noninteractive ",
+                "keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA ",
+                "keyboard-configuration/variant=USA console-setup/ask_detect=false ",
+                "mirror/http/hostname={{ user `mirror` }} ",
+                "initrd=/install/initrd.gz -- <enter>"
+            ]
+        },
+        {   "type": "virtualbox-iso",
+            "name": "virtualbox",
+            "iso_url": "http://releases.ubuntu.com/releases/14.04.1/ubuntu-14.04.1-server-amd64.iso",
+            "iso_checksum": "ca2531b8cd79ea5b778ede3a524779b9",
+            "iso_checksum_type": "md5",
+            "guest_os_type": "Ubuntu_64",
+            "http_directory": ".",
+            "vm_name": "nuxeovm",
+            "vboxmanage": [
+                ["modifyvm", "{{ .Name }}", "--cpus", "{{ user `cpu` }}"],
+                ["modifyvm", "{{ .Name }}", "--memory", "{{ user `mem` }}"],
+                ["modifyvm", "{{ .Name }}", "--vram", "32"]
+            ],
+            "ssh_username": "nuxeo",
+            "ssh_password": "nuxeo",
+            "ssh_wait_timeout": "600s",
+            "shutdown_command": "sudo shutdown -P now",
+            "boot_command" : [
+                "<esc><esc><enter><wait>",
+                "/install/vmlinuz noapic ",
+                "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed_ubuntu.cfg ",
+                "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
+                "hostname=nuxeovm ",
+                "fb=false debconf/frontend=noninteractive ",
+                "keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA ",
+                "keyboard-configuration/variant=USA console-setup/ask_detect=false ",
+                "mirror/http/hostname={{ user `mirror` }} ",
+                "initrd=/install/initrd.gz -- <enter>"
+            ]
+        },
+        {   "type": "qemu",
+            "name": "qemu",
+            "accelerator": "kvm",
+            "iso_url": "http://releases.ubuntu.com/releases/14.04.1/ubuntu-14.04.1-server-amd64.iso",
+            "iso_checksum": "ca2531b8cd79ea5b778ede3a524779b9",
+            "iso_checksum_type": "md5",
+            "headless": true,
+            "http_directory": ".",
+            "vm_name": "nuxeovm",
+            "qemuargs": [
+                ["-smp", "{{ user `cpu` }}"],
+                [ "-m", "{{ user `mem` }}"]
+            ],
+            "disk_size": "10240",
+            "ssh_username": "nuxeo",
+            "ssh_password": "nuxeo",
+            "ssh_wait_timeout": "600s",
+            "net_device": "virtio-net",
+            "disk_interface": "virtio",
+            "shutdown_command": "sudo shutdown -P now",
+            "boot_command" : [
+                "<esc><esc><enter><wait>",
+                "/install/vmlinuz noapic ",
+                "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed_ubuntu.cfg ",
+                "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
+                "hostname=nuxeovm ",
+                "fb=false debconf/frontend=noninteractive ",
+                "keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA ",
+                "keyboard-configuration/variant=USA console-setup/ask_detect=false ",
+                "mirror/http/hostname={{ user `mirror` }} ",
+                "initrd=/install/initrd.gz -- <enter>"
+            ]
+        }
+    ],
+    "provisioners": [
+        {   "type": "file",
+            "source": "vmfiles",
+            "destination": "/tmp"
+        },
+        {   "type": "file",
+            "source": "tmp/nuxeo-distribution.zip",
+            "destination": "/tmp/nuxeo-distribution.zip"
+        },
+        {   "type": "shell",
+            "execute_command": "echo 'nuxeo' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+            "scripts": ["vmscripts/base.sh", "vmscripts/update.sh", "vmscripts/nuxeo.sh", "vmscripts/cleanup.sh"]
+        }
+    ]
+}

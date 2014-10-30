@@ -1,13 +1,8 @@
 #!/bin/bash
 
-# Prevent firstboot from being executed twice
-if [ -f /root/firstboot_done ]; then
-    exit 0
-fi
-
 # VM setup
 
-# Regeneraet host keys
+# Regenerate host keys
 rm -f /etc/ssh/ssh_host_*
 dpkg-reconfigure openssh-server
 
@@ -19,7 +14,7 @@ nuxeo:$nxpass
 EOF
 
 cat << 'EOF' > /etc/issue
-Ubuntu 12.04 LTS \n \l
+Ubuntu 14.04 LTS \n \l
 EOF
 
 cat << EOF >> /etc/issue
@@ -36,7 +31,6 @@ pgpass=$(pwgen -c1)
 
 su postgres -c "psql -p 5432 template1 --quiet -t -f-" << EOF > /dev/null
 CREATE USER nuxeo WITH PASSWORD '$pgpass';
-CREATE LANGUAGE plpgsql;
 CREATE FUNCTION pg_catalog.text(integer) RETURNS text STRICT IMMUTABLE LANGUAGE SQL AS 'SELECT textin(int4out(\$1));';
 CREATE CAST (integer AS text) WITH FUNCTION pg_catalog.text(integer) AS IMPLICIT;
 COMMENT ON FUNCTION pg_catalog.text(integer) IS 'convert integer to text';
@@ -59,8 +53,7 @@ nuxeo.db.password=$pgpass
 EOF
 
 update-rc.d nuxeo defaults
-/etc/init.d/nuxeo start
+update-rc.d -f firstboot remove
 
-# Prevent firstboot from being executed twice
-touch /root/firstboot_done
+/etc/init.d/nuxeo start
 
