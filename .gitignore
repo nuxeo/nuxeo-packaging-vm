@@ -1,4 +1,4 @@
-build/
-output/
-*.orig
-*~
+tmp
+packer_cache
+output-*
+nuxeo-*
