@@ -32,7 +32,7 @@
         -->
       <Version>7.1.0.0</Version>
       <FullVersion>@@VERSION@@</FullVersion>
-      <ProductUrl>http://www.nuxeo.com/en/products</ProductUrl>
+      <ProductUrl>http://www.nuxeo.com/products</ProductUrl>
       <VendorUrl>http://www.nuxeo.com/</VendorUrl>
       <AppUrl>http://${vami.ip0.Nuxeo}/</AppUrl>
       <Category>Application</Category>
