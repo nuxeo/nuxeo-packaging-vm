@@ -1,6 +1,6 @@
 {
     "variables": {
-        "mirror": "netboot.in.nuxeo.com",
+        "mirror": "ftp.crihan.fr",
         "cpu": "2",
         "mem": "2048"
     },

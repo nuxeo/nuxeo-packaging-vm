@@ -5,7 +5,7 @@ echo 'nuxeo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 wget -O- http://apt.nuxeo.org/nuxeo.key | apt-key add -
 echo 'deb http://apt.nuxeo.org/ trusty releases' > /etc/apt/sources.list.d/nuxeo.list # For ffmpeg
 apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -q -y acpid openjdk-7-jdk libreoffice imagemagick poppler-utils ffmpeg-nuxeo ffmpeg2theora ufraw libwpd-tools postgresql-9.3 apache2 perl locales pwgen dialog zip unzip
+DEBIAN_FRONTEND=noninteractive apt-get install -q -y acpid openjdk-7-jdk libreoffice imagemagick poppler-utils ffmpeg-nuxeo ffmpeg2theora ufraw libwpd-tools postgresql-9.3 apache2 perl locales pwgen dialog zip unzip exiftool
 
 update-java-alternatives --set java-1.7.0-openjdk-amd64
 
