@@ -9,10 +9,10 @@ DEBIAN_FRONTEND=noninteractive apt-get install -q -y acpid libreoffice imagemagi
 
 # Java 8
 
-wget -q -O/tmp/jdk-8-linux-x64.tgz --no-check-certificate --header 'Cookie: oraclelicense=accept-securebackup-cookie' 'http://download.oracle.com/otn-pub/java/jdk/8u25-b17/jdk-8u25-linux-x64.tar.gz'
+wget -q -O/tmp/jdk-8-linux-x64.tgz --no-check-certificate --header 'Cookie: oraclelicense=accept-securebackup-cookie' 'http://download.oracle.com/otn-pub/java/jdk/8u60-b27/jdk-8u60-linux-x64.tar.gz'
 tar xzf /tmp/jdk-8-linux-x64.tgz -C /usr/lib/jvm
 rm /tmp/jdk-8-linux-x64.tgz
-ln -s /usr/lib/jvm/jdk1.8.0_25 /usr/lib/jvm/java-8
+ln -s /usr/lib/jvm/jdk1.8.0_60 /usr/lib/jvm/java-8
 
 update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-8/jre/bin/java 1081
 update-alternatives --install /usr/bin/javaws javaws /usr/lib/jvm/java-8/jre/bin/javaws 1081
