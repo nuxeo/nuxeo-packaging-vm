@@ -173,7 +173,11 @@ if [ "x$builder" == "xqemu" ]; then
     fi
     mkdir -p $zipdir
     # Convert to vmdk
-    qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm.qcow2 $zipdir/nuxeovm.vmdk
+    if [ -f output-qemu/nuxeovm.qcow2 ]; then
+        qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm.qcow2 $zipdir/nuxeovm.vmdk
+    else
+        qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm $zipdir/nuxeovm.vmdk
+    fi
     # Create archive
     size=$(du -b $zipdir/nuxeovm.vmdk | awk '{print $1}')
     perl -p -e "s/\@\@SIZE\@\@/$size/g" templates/nuxeovm.ovf | perl -p -e "s/\@\@VERSION\@\@/$version/g" > $zipdir/nuxeovm.ovf
