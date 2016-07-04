@@ -3,12 +3,14 @@
 echo 'nuxeo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 wget -O- http://apt.nuxeo.org/nuxeo.key | apt-key add -
-echo 'deb http://apt.nuxeo.org/ trusty releases' > /etc/apt/sources.list.d/nuxeo.list # For ffmpeg
+echo 'deb http://apt.nuxeo.org/ xenial releases' > /etc/apt/sources.list.d/nuxeo.list # For ffmpeg
+
 apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -q -y acpid libreoffice imagemagick poppler-utils ffmpeg-nuxeo ffmpeg2theora ufraw libwpd-tools postgresql-9.3 apache2 perl locales pwgen dialog zip unzip exiftool
+DEBIAN_FRONTEND=noninteractive apt-get -q -y install acpid libreoffice imagemagick poppler-utils ffmpeg-nuxeo ffmpeg2theora ufraw libwpd-tools postgresql-9.5 apache2 perl locales pwgen dialog zip unzip exiftool aptitude
 
 # Java 8
 
+mkdir -p /usr/lib/jvm
 wget -q -O/tmp/jdk-8-linux-x64.tgz --no-check-certificate --header 'Cookie: oraclelicense=accept-securebackup-cookie' 'http://download.oracle.com/otn-pub/java/jdk/8u60-b27/jdk-8u60-linux-x64.tar.gz'
 tar xzf /tmp/jdk-8-linux-x64.tgz -C /usr/lib/jvm
 rm /tmp/jdk-8-linux-x64.tgz
@@ -29,14 +31,15 @@ chmod +x /etc/init.d/nuxeo
 mv /tmp/vmfiles/nuxeo.apache2 /etc/apache2/sites-available/nuxeo.conf
 mv /tmp/vmfiles/showaddress /sbin/showaddress
 chmod +x /sbin/showaddress
-mv /tmp/vmfiles/tty1.conf /etc/init/tty1.conf
+mv /tmp/vmfiles/tty.conf /etc/systemd/system/nuxeo_status@.service
+ln -sf /etc/systemd/system/nuxeo_status@.service /etc/systemd/system/getty.target.wants/getty@tty1.service
 
 # PostgreSQL setup
 
-pg_dropcluster --stop 9.3 main
-pg_createcluster --locale=en_US.UTF-8 --port=5432 9.3 nuxeodb
+pg_dropcluster --stop 9.5 main
+pg_createcluster --locale=en_US.UTF-8 --port=5432 9.5 nuxeodb
 service postgresql stop
-pgconf="/etc/postgresql/9.3/nuxeodb/postgresql.conf"
+pgconf="/etc/postgresql/9.5/nuxeodb/postgresql.conf"
 perl -p -i -e "s/^#?shared_buffers\s*=.*$/shared_buffers = 100MB/" $pgconf
 perl -p -i -e "s/^#?max_prepared_transactions\s*=.*$/max_prepared_transactions = 32/" $pgconf
 perl -p -i -e "s/^#?effective_cache_size\s*=.*$/effective_cache_size = 1GB/" $pgconf

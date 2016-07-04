@@ -21,7 +21,7 @@ cat << EOF >> /etc/issue
 Default password for the root and nuxeo users: $nxpass
 EOF
 
-restart tty2
+systemctl restart getty@tty2.service
 
 # PostgreSQL setup
 
