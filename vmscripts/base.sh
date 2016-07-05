@@ -2,7 +2,7 @@
 
 echo 'nuxeo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-wget -O- http://apt.nuxeo.org/nuxeo.key | apt-key add -
+curl -s http://apt.nuxeo.org/nuxeo.key | apt-key add -
 echo 'deb http://apt.nuxeo.org/ xenial releases' > /etc/apt/sources.list.d/nuxeo.list # For ffmpeg
 
 apt-get update
