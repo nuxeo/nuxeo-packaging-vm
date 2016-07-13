@@ -147,7 +147,11 @@ if [ -z "$distrib" ]; then
         fi
     fi
 else
-    cp "$distrib" tmp/nuxeo-distribution.zip
+    if [[ $distrib == *"://"* ]]; then
+        wget -O tmp/nuxeo-distribution.zip $distrib
+    else
+        cp "$distrib" tmp/nuxeo-distribution.zip
+    fi
 fi
 
 # Build image
