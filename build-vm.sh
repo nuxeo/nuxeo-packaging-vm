@@ -167,17 +167,38 @@ if [ "$RETCODE" != "0" ]; then
 fi
 
 if [ "x$builder" == "xqemu" ]; then
-    zipdir="nuxeo-$version-vm"
+
+    #
+    # VMWare version
+    #
+
+    zipdir="nuxeo-$version-vm-vmware"
     if [ -d "$zipdir" ]; then
         rm -rf $zipdir
     fi
+    rm -f ${zipdir}.zip || true
     mkdir -p $zipdir
     # Convert to vmdk
-    #if [ -f output-qemu/nuxeovm.qcow2 ]; then
-    #    qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm.qcow2 $zipdir/nuxeovm.vmdk
-    #else
-    #    qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm $zipdir/nuxeovm.vmdk
-    #fi
+    if [ -f output-qemu/nuxeovm.raw ]; then
+        qemu-img convert -f raw -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm.raw $zipdir/nuxeovm.vmdk
+    else
+        qemu-img convert -f raw -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm $zipdir/nuxeovm.vmdk
+    fi
+    # Create archive
+    cp templates/nuxeovm.vmx $zipdir/
+    cp templates/README-vmware.txt $zipdir/README.txt
+    zip -r ${zipdir}.zip $zipdir
+
+    #
+    # VirtualBox version
+    #
+
+    zipdir="nuxeo-$version-vm-vbox"
+    if [ -d "$zipdir" ]; then
+        rm -rf $zipdir
+    fi
+    rm -f ${zipdir}.zip || true
+    mkdir -p $zipdir
     # Convert to monolithic VMDK as qemu-img is bad with sparse
     if [ -f output-qemu/nuxeovm.raw ]; then
         qemu-img convert -f raw -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm.raw $zipdir/nuxeovm.tmp
@@ -191,8 +212,8 @@ if [ "x$builder" == "xqemu" ]; then
     # Create archive
     size=$(du -b $zipdir/nuxeovm.vmdk | awk '{print $1}')
     perl -p -e "s/\@\@SIZE\@\@/$size/g" templates/nuxeovm.ovf | perl -p -e "s/\@\@VERSION\@\@/$version/g" > $zipdir/nuxeovm.ovf
-    cp templates/nuxeovm.vmx $zipdir/
-    cp templates/README.txt $zipdir/
+    cp templates/README-vbox.txt $zipdir/README.txt
     zip -r ${zipdir}.zip $zipdir
+
 fi
 

@@ -1,6 +1,3 @@
-- VMWare Viewer / Workstation /Fusion:
-double-click on nuxeovm.vmx.
-
 - VirtualBox:
 In the interface, go to File -> Import Appliance and select nuxeovm.ovf.
 
