@@ -179,7 +179,11 @@ if [ "x$builder" == "xqemu" ]; then
     #    qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm $zipdir/nuxeovm.vmdk
     #fi
     # Convert to monolithic VMDK as qemu-img is bad with sparse
-    qemu-img convert -f raw -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm $zipdir/nuxeovm.tmp
+    if [ -f output-qemu/nuxeovm.raw ]; then
+        qemu-img convert -f raw -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm.raw $zipdir/nuxeovm.tmp
+    else
+        qemu-img convert -f raw -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm $zipdir/nuxeovm.tmp
+    fi
     # Then to sparse VMDK
     vboxmanage clonehd --format=VMDK --variant=Stream $zipdir/nuxeovm.tmp $zipdir/nuxeovm.vmdk
     rm $zipdir/nuxeovm*.tmp
