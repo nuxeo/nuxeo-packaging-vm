@@ -86,6 +86,7 @@
                 [ "-m", "{{ user `mem` }}"]
             ],
             "disk_size": "10240",
+            "format": "raw",
             "ssh_username": "nuxeo",
             "ssh_password": "nuxeo",
             "ssh_wait_timeout": "600s",

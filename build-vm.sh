@@ -173,11 +173,17 @@ if [ "x$builder" == "xqemu" ]; then
     fi
     mkdir -p $zipdir
     # Convert to vmdk
-    if [ -f output-qemu/nuxeovm.qcow2 ]; then
-        qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm.qcow2 $zipdir/nuxeovm.vmdk
-    else
-        qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm $zipdir/nuxeovm.vmdk
-    fi
+    #if [ -f output-qemu/nuxeovm.qcow2 ]; then
+    #    qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm.qcow2 $zipdir/nuxeovm.vmdk
+    #else
+    #    qemu-img convert -f qcow2 -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm $zipdir/nuxeovm.vmdk
+    #fi
+    # Convert to monolithic VMDK as qemu-img is bad with sparse
+    qemu-img convert -f raw -O vmdk -o subformat=monolithicFlat output-qemu/nuxeovm $zipdir/nuxeovm.tmp
+    # Then to sparse VMDK
+    vboxmanage clonehd --format=VMDK --variant=Stream $zipdir/nuxeovm.tmp $zipdir/nuxeovm.vmdk
+    rm $zipdir/nuxeovm*.tmp
+
     # Create archive
     size=$(du -b $zipdir/nuxeovm.vmdk | awk '{print $1}')
     perl -p -e "s/\@\@SIZE\@\@/$size/g" templates/nuxeovm.ovf | perl -p -e "s/\@\@VERSION\@\@/$version/g" > $zipdir/nuxeovm.ovf
