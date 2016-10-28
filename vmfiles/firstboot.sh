@@ -2,6 +2,13 @@
 
 # VM setup
 
+# Prevent double execution
+
+if [ -f /firstboot_done ]; then
+    exit 0
+fi
+touch /firstboot_done
+
 # Regenerate host keys
 rm -f /etc/ssh/ssh_host_*
 dpkg-reconfigure openssh-server
