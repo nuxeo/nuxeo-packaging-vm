@@ -7,7 +7,7 @@
 if [ -f /firstboot_done ]; then
     exit 0
 fi
-touch /firstboot_done
+echo "DO NOT REMOVE THIS FILE" > /firstboot_done
 
 # Regenerate host keys
 rm -f /etc/ssh/ssh_host_*
@@ -60,7 +60,5 @@ nuxeo.db.password=$pgpass
 EOF
 
 update-rc.d nuxeo defaults
-update-rc.d -f firstboot remove
-
 /etc/init.d/nuxeo start
 
