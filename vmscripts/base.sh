@@ -9,7 +9,7 @@ curl -s http://apt.nuxeo.org/nuxeo.key | apt-key add -
 echo 'deb http://apt.nuxeo.org/ xenial releases' > /etc/apt/sources.list.d/nuxeo.list # For ffmpeg
 
 apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get -q -y install ffmpeg-nuxeo
+DEBIAN_FRONTEND=noninteractive apt-get -q -y install ffmpeg-nuxeo ccextractor-nuxeo
 
 # Java 8
 
