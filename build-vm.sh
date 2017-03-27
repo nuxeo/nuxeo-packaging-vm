@@ -137,7 +137,7 @@ fi
 mkdir tmp
 if [ -z "$distrib" ]; then
     echo "Downloading distribution..."
-    mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.4:get -Dartifact=org.nuxeo.ecm.distribution:nuxeo-distribution-tomcat:${version}:zip -Ddest=tmp/nuxeo-distribution.zip -Dtransitive=false
+    mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.4:get -Dartifact=org.nuxeo.ecm.distribution:nuxeo-server-tomcat:${version}:zip -Ddest=tmp/nuxeo-distribution.zip -Dtransitive=false
     if [ "$?" != "0" ]; then
         echo "ERROR: Unable to download distribution"
         exit 1
