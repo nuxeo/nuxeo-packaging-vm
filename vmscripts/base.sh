@@ -3,29 +3,15 @@
 echo 'nuxeo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get -q -y install acpid libreoffice imagemagick poppler-utils ffmpeg2theora ufraw libwpd-tools postgresql-9.5 apache2 perl locales pwgen dialog zip unzip exiftool aptitude curl
+DEBIAN_FRONTEND=noninteractive apt-get -q -y install acpid libreoffice imagemagick poppler-utils ffmpeg2theora ufraw libwpd-tools postgresql-9.5 apache2 perl locales pwgen dialog zip unzip exiftool aptitude curl openjdk-8-jdk
+update-java-alternatives --set java-1.8.0-openjdk-amd64
+
 
 curl -s http://apt.nuxeo.org/nuxeo.key | apt-key add -
 echo 'deb http://apt.nuxeo.org/ xenial releases' > /etc/apt/sources.list.d/nuxeo.list # For ffmpeg
 
 apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get -q -y install ffmpeg-nuxeo ccextractor-nuxeo
-
-# Java 8
-
-mkdir -p /usr/lib/jvm
-wget -q -O/tmp/jdk-8-linux-x64.tgz --no-check-certificate --header 'Cookie: oraclelicense=accept-securebackup-cookie' 'http://download.oracle.com/otn-pub/java/jdk/8u60-b27/jdk-8u60-linux-x64.tar.gz'
-tar xzf /tmp/jdk-8-linux-x64.tgz -C /usr/lib/jvm
-rm /tmp/jdk-8-linux-x64.tgz
-ln -s /usr/lib/jvm/jdk1.8.0_60 /usr/lib/jvm/java-8
-
-update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-8/jre/bin/java 1081
-update-alternatives --install /usr/bin/javaws javaws /usr/lib/jvm/java-8/jre/bin/javaws 1081
-update-alternatives --install /usr/bin/jexec jexec /usr/lib/jvm/java-8/lib/jexec 1081
-
-update-alternatives --set java /usr/lib/jvm/java-8/jre/bin/java
-update-alternatives --set javaws /usr/lib/jvm/java-8/jre/bin/java
-update-alternatives --set jexec /usr/lib/jvm/java-8/lib/jexec
 
 # Startup
 
