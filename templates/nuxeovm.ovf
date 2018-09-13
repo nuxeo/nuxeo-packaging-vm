@@ -30,7 +30,7 @@
             including, for example, alpha or beta designations
             and other release criteria.
         -->
-      <Version>9.2.0.0</Version>
+      <Version>@@VERSION@@.0.0</Version>
       <FullVersion>@@VERSION@@</FullVersion>
       <ProductUrl>http://www.nuxeo.com/products</ProductUrl>
       <VendorUrl>http://www.nuxeo.com/</VendorUrl>
@@ -67,7 +67,7 @@
     </AnnotationSection>
     <OperatingSystemSection ovf:id="94" ovf:version="" vmw:osType="ubuntuGuest">
       <Info>Guest Operating System</Info>
-      <Description>Ubuntu 14.04.1</Description>
+      <Description>Ubuntu 16.04.5</Description>
     </OperatingSystemSection>
     <VirtualHardwareSection ovf:transport="com.vmware.guestInfo" ovf:required="false">
       <Info>Virtual Hardware Requirements</Info>

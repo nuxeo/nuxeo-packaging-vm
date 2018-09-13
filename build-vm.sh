@@ -11,8 +11,13 @@ usage() {
     echo "  -v version  Nuxeo version"
     echo "  -d distrib  Nuxeo distribution (local zip file)"
     echo "  -b builder  Packer builder to use (default: qemu)"
+    echo "  -c numcpus  Number of CPUs to suggest for VM"
+    echo "  -r ramsize  Size of RAM to suggest for VM"
+    echo "  -m mirror   Ubuntu mirror to use"
+    echo "  -n          Machine readable output"
     echo
-    echo "If -d is not specified, the distribution will be downloaded from a maven repository."
+    echo "If -d is not specified, the distribution will be downloaded."
+    echo "This script is best run as root."
 }
 
 version=""
@@ -90,6 +95,11 @@ fi
 # Check requirements
 reqsok=true
 
+haswget=$(which wget)
+if [ -z "$haswget" ]; then
+    reqsok=false
+    echo "Missing: wget (package wget)"
+fi
 haspacker=$(which packer)
 if [ -z "$haspacker" ]; then
     reqsok=false
@@ -99,6 +109,16 @@ hasqemuimg=$(which qemu-img)
 if [ -z "$hasqemuimg" ]; then
     reqsok=false
     echo "Missing: qemu-img (package qemu-utils)"
+fi
+hasvboxmanage=$(which vboxmanage)
+if [ -z "$hasvboxmanage" ]; then
+    reqsok=false
+    echo "Missing: vboxmanage (package virtualbox)"
+fi
+haszip=$(which zip)
+if [ -z "$haszip" ]; then
+    reqsok=false
+    echo "Missing: zip (package zip)"
 fi
 if [ "x$builder" == "xqemu" ]; then
     haskvm=$(which kvm)
@@ -122,6 +142,12 @@ if [ "x$builder" == "xvirtualbox" ]; then
     fi
 fi
 
+if [[ $EUID -ne 0 ]]; then
+   echo
+   echo "[Warning] This build might not work as non-root user depending on your system settings."
+   echo
+fi
+
 if [ "$reqsok" != "true" ]; then
     exit 1
 fi
@@ -136,18 +162,17 @@ if [ -d "tmp" ]; then
 fi
 mkdir tmp
 if [ -z "$distrib" ]; then
-    echo "Downloading distribution..."
-    mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.4:get -Dartifact=org.nuxeo.ecm.distribution:nuxeo-server-tomcat:${version}:zip -Ddest=tmp/nuxeo-distribution.zip -Dtransitive=false
+    distrib="http://cdn.nuxeo.com/nuxeo-${version}/nuxeo-server-${version}-tomcat.zip"
+    echo "Downloading distribution: ${distrib}"
+fi
+if [[ $distrib == *"://"* ]]; then
+    wget -nv -O tmp/nuxeo-distribution.zip $distrib
     if [ "$?" != "0" ]; then
         echo "ERROR: Unable to download distribution"
         exit 1
     fi
 else
-    if [[ $distrib == *"://"* ]]; then
-        wget -O tmp/nuxeo-distribution.zip $distrib
-    else
-        cp "$distrib" tmp/nuxeo-distribution.zip
-    fi
+    cp "$distrib" tmp/nuxeo-distribution.zip
 fi
 
 # Build image
@@ -172,7 +197,7 @@ if [ "x$builder" == "xqemu" ]; then
     # VMWare version
     #
 
-    zipdir="nuxeo-$version-vm-vmware"
+    zipdir="nuxeo-${version}-vm-vmware"
     if [ -d "$zipdir" ]; then
         rm -rf $zipdir
     fi
@@ -193,7 +218,7 @@ if [ "x$builder" == "xqemu" ]; then
     # VirtualBox version
     #
 
-    zipdir="nuxeo-$version-vm-vbox"
+    zipdir="nuxeo-${version}-vm-vbox"
     if [ -d "$zipdir" ]; then
         rm -rf $zipdir
     fi
@@ -211,7 +236,7 @@ if [ "x$builder" == "xqemu" ]; then
 
     # Create archive
     size=$(du -b $zipdir/nuxeovm.vmdk | awk '{print $1}')
-    perl -p -e "s/\@\@SIZE\@\@/$size/g" templates/nuxeovm.ovf | perl -p -e "s/\@\@VERSION\@\@/$version/g" > $zipdir/nuxeovm.ovf
+    perl -p -e "s/\@\@SIZE\@\@/$size/g" templates/nuxeovm.ovf | perl -p -e "s/\@\@VERSION\@\@/${version}/g" > $zipdir/nuxeovm.ovf
     cp templates/README-vbox.txt $zipdir/README.txt
     zip -r ${zipdir}.zip $zipdir
 

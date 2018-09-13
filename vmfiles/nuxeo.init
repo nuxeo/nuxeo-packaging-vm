@@ -11,11 +11,7 @@
 
 DESC="Nuxeo"
 
-NUXEO_USER=nuxeo
-NUXEOCTL="/var/lib/nuxeo/server/bin/nuxeoctl"
-NUXEO_CONF="/etc/nuxeo/nuxeo.conf"
-export NUXEO_CONF
-
+. /etc/profile.d/nuxeo_env.sh
 . /lib/init/vars.sh
 . /lib/lsb/init-functions
 
