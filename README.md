@@ -12,7 +12,7 @@ OPTIONS:
   -m mirror   Ubuntu mirror address - default: Nuxeo internal mirror  
 
 
-If -d is not specified, the distribution will be downloaded from a maven repository.
+If -d is not specified, the distribution will be downloaded.
 
 
 ## Requirements:

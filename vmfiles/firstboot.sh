@@ -21,7 +21,7 @@ nuxeo:$nxpass
 EOF
 
 cat << 'EOF' > /etc/issue
-Ubuntu 14.04 LTS \n \l
+Ubuntu 16.04.5 LTS \n \l
 EOF
 
 cat << EOF >> /etc/issue

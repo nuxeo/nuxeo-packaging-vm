@@ -17,6 +17,8 @@ DEBIAN_FRONTEND=noninteractive apt-get -q -y install ffmpeg-nuxeo ccextractor-nu
 
 mv /tmp/vmfiles/nuxeo.init /etc/init.d/nuxeo
 chmod +x /etc/init.d/nuxeo
+mv /tmp/vmfiles/nuxeo_env.sh /etc/profile.d/nuxeo_env.sh
+chmod +rx /etc/profile.d/nuxeo_env.sh
 mv /tmp/vmfiles/nuxeo.apache2 /etc/apache2/sites-available/nuxeo.conf
 mv /tmp/vmfiles/showaddress /sbin/showaddress
 chmod +x /sbin/showaddress
