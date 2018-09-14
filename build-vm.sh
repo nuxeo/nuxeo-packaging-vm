@@ -1,4 +1,25 @@
 #!/bin/bash
+##
+## (C) Copyright 2010-2018 Nuxeo SA (http://nuxeo.com/) and contributors.
+##
+## All rights reserved. This program and the accompanying materials
+## are made available under the terms of the GNU Lesser General Public License
+## (LGPL) version 2.1 which accompanies this distribution, and is available at
+## http://www.gnu.org/licenses/lgpl-2.1.html
+##
+## This library is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+## Lesser General Public License for more details.
+##
+## Contributors:
+##     Julien Carsique
+##     Mathieu Guillaume
+##     Damon Brown
+##
+## Shell script that builds a Nuxeo distribution Virtual Machine
+## for VirtualBox, VMWare, and other QEMU/KVM compatible boxes.
+##
 
 START=$(date +"%s")
 
@@ -106,6 +127,9 @@ if [ "x$builder" == "xqemu" ]; then
         reqsok=false
         echo "Missing: kvm (package qemu-kvm)"
     fi
+    if [[ ! -w /dev/kvm ]]; then
+       echo "Warning: Unable to write to /dev/kvm.  Build may fail."
+    fi
 fi
 if [ "x$builder" == "xvmware" ]; then
     hasvmrun=$(which vmrun)
@@ -130,28 +154,67 @@ if [ "x$builder" != "xqemu" ]; then
     echo "WARNING: Non-qemu builder selected, no post-build conversion will be done."
 fi
 
-# Download/copy distribution
+# Clean up previous download
 if [ -d "tmp" ]; then
     rm -rf tmp
+    if [ "$?" != "0" ]; then
+        echo "ERROR: Unable to remove previous distribution"
+        exit 1
+    fi
 fi
+
+# Download/copy distribution
 mkdir tmp
 if [ -z "$distrib" ]; then
     echo "Downloading distribution..."
-    mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.4:get -Dartifact=org.nuxeo.ecm.distribution:nuxeo-server-tomcat:${version}:zip -Ddest=tmp/nuxeo-distribution.zip -Dtransitive=false
+    mvn -q org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy \
+        -Dartifact=org.nuxeo.ecm.distribution:nuxeo-server-tomcat:${version}:zip \
+        -DoutputDirectory=${PWD}/tmp \
+        -DoverWriteReleases=true -DoverWriteSnapshots=true \
+        -Dmdep.stripVersion=true \
+        -DremoteRepositories=central::default::http://maven.nuxeo.org/nexus/content/groups/public,public-snapshot::default::http://maven.nuxeo.org/nexus/content/groups/public-snapshot
     if [ "$?" != "0" ]; then
-        echo "ERROR: Unable to download distribution"
+        rm -f tmp/nuxeo-server-tomcat.zip
+        echo "ERROR: Unable to download distribution from maven"
         exit 1
     fi
+    mv -f tmp/nuxeo-server-tomcat.zip tmp/nuxeo-distribution.zip
 else
     if [[ $distrib == *"://"* ]]; then
         wget -O tmp/nuxeo-distribution.zip $distrib
-    else
-        cp "$distrib" tmp/nuxeo-distribution.zip
+        if [ "$?" != "0" ]; then
+            rm -f tmp/nuxeo-distribution.zip
+            echo "ERROR: Unable to download distribution from $distrib"
+            exit 1
+        fi
+    elif [ -r "$distrib" ]; then
+        cp -f "$distrib" tmp/nuxeo-distribution.zip
+        if [ "$?" != "0" ]; then
+            rm -f tmp/nuxeo-distribution.zip
+            echo "ERROR: Unable to copy distribution from $distrib"
+            exit 1
+        fi
+    fi
+fi
+
+# Check for distribution
+if [ ! -r tmp/nuxeo-distribution.zip ]; then
+    echo "No Nuxeo distribution found, unable to build image."
+    echo
+    usage
+    exit 1
+fi
+
+# Clean up previous output
+if [ -d "output-$builder" ]; then
+    rm -rf output-$builder
+    if [ "$?" != "0" ]; then
+        echo "ERROR: Unable to remove previous build output"
+        exit 1
     fi
 fi
 
 # Build image
-rm -rf output-$builder
 packer build -only=$builder $mirrorarg $cpusarg $memarg $color nuxeovm.json
 RETCODE=$?
 echo "Build status: $RETCODE"
