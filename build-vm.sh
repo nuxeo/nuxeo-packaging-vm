@@ -32,6 +32,10 @@ usage() {
     echo "  -v version  Nuxeo version"
     echo "  -d distrib  Nuxeo distribution (local zip file)"
     echo "  -b builder  Packer builder to use (default: qemu)"
+    echo "  -c numcpus  Number of CPUs to suggest for VM"
+    echo "  -r ramsize  Size of RAM to suggest for VM"
+    echo "  -m mirror   Ubuntu mirror to use"
+    echo "  -n          Produce machine readable output"
     echo
     echo "If -d is not specified, the distribution will be downloaded from a maven repository."
 }
