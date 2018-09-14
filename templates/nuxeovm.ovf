@@ -67,7 +67,7 @@
     </AnnotationSection>
     <OperatingSystemSection ovf:id="94" ovf:version="" vmw:osType="ubuntuGuest">
       <Info>Guest Operating System</Info>
-      <Description>Ubuntu 14.04.1</Description>
+      <Description>Ubuntu 16.04.5</Description>
     </OperatingSystemSection>
     <VirtualHardwareSection ovf:transport="com.vmware.guestInfo" ovf:required="false">
       <Info>Virtual Hardware Requirements</Info>
