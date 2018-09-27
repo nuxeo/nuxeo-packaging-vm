@@ -1,9 +1,11 @@
 properties([[$class: 'BuildDiscarderProperty',
-            strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '1', daysToKeepStr: '60', numToKeepStr: '60']],
+            strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '1',
+daysToKeepStr: '60', numToKeepStr: '60']],
             [$class: 'RebuildSettings', autoRebuild: false, rebuildDisabled: false],
             [$class: 'ParametersDefinitionProperty', parameterDefinitions: [
             [$class: 'StringParameterDefinition', defaultValue: '6.0-SNAPSHOT', description: 'Product version to build', name: 'NUXEO_VERSION'],
-            [$class: 'StringParameterDefinition', defaultValue: '', description: 'Optional - Use the specified URL (eg a link to staging) as the source for the distribution instead of maven', name: 'DISTRIBUTION_URL'],
+            [$class: 'StringParameterDefinition', defaultValue: '', description: 'Optional - Use the specified URL (eg a link to staging) as the source for the distribution instead of maven', name:
+'DISTRIBUTION_URL'],
             [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Build VMs', name: 'BUILD_VM'],
             [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Publish VMs', name: 'PUBLISH_VM'],
             [$class: 'StringParameterDefinition', defaultValue: '/var/www/community.nuxeo.com/static/staging/', description: 'Staging publishing destination path (for scp)', name: 'STAGING_PATH'],
@@ -13,13 +15,16 @@ properties([[$class: 'BuildDiscarderProperty',
 node('OLDJOYEUX') {
     timestamps {
         timeout(time: 240, unit: 'MINUTES') {
-            sh '''
-                #!/bin/bash -ex
-               
+
+	    sh '''
+		#!/bin/bash -ex
+
+		MAVEN_OPTS="-Xmx512m -Xmx2048m"
+
 		if [ -n "$DISTRIBUTION_URL" ]; then
-			    DISTRIBUTION="-d$DISTRIBUTION_URL"
-		else
-			DISTRIBUTION=""
+		    DISTRIBUTION="-d$DISTRIBUTION_URL"
+		 else
+		    DISTRIBUTION=""
 		fi
 
 		if [ "$BUILD_VM" = "true" ]; then
@@ -46,11 +51,12 @@ node('OLDJOYEUX') {
 			    FILENAME=$(basename $PKG)
 			    scp $PKG ${DEPLOY_HOST}:$STAGING_PATH
 			    ssh -n ${DEPLOY_HOST} "cd $STAGING_PATH && md5sum $FILENAME > ${FILENAME}.md5 && sha256sum $FILENAME > ${FILENAME}.sha256"
-			done | "${VM_LIST}"
+			done | for i in ${VM_LIST}; do echo ${i}; done
 		    fi
 
 		fi
-                '''
+		'''
         }
     }
 }
+
