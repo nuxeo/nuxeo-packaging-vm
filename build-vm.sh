@@ -23,7 +23,7 @@ START=$(date +"%s")
 cd "$(dirname $0)"
 
 usage() {
-    echo "Usage: $0 <-v version> [-d distrib] [-b builder] [-m mirror] [-c numcpus] [-r ramsize] [-n]"
+    echo "Usage: $0 <-v version> [-d distrib] [-b builder] [-m mirror] [-c numcpus] [-r ramsize] [-P profile] [-n]"
     echo
     echo "OPTIONS:"
     echo "  -v version  Nuxeo version"
@@ -32,6 +32,7 @@ usage() {
     echo "  -c numcpus  Number of CPUs to suggest for VM"
     echo "  -r ramsize  Size of RAM to suggest for VM"
     echo "  -m mirror   Ubuntu mirror to use"
+    echo "  -P profile  Maven profile to use"
     echo "  -n          Produce machine readable output"
     echo
     echo "If -d is not specified, the distribution will be downloaded from a maven repository."
@@ -40,8 +41,9 @@ usage() {
 version=""
 distrib=""
 color=""
+profile="public"
 
-while getopts ":hv:d:b:m:c:r:n" opt
+while getopts ":hv:d:b:m:c:r:P:n" opt
 do
     case $opt in
     h)
@@ -65,6 +67,9 @@ do
         ;;
     r)
         ram=$OPTARG
+        ;;
+    P)
+        profile=$OPTARG
         ;;
     n)
         color="-machine-readable"
@@ -199,10 +204,9 @@ if [ -z "$distrib" ]; then
     echo "Downloading distribution..."
     mvn -q org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy \
         -Dartifact=org.nuxeo.ecm.distribution:nuxeo-server-tomcat:${version}:zip \
-        -DoutputDirectory=${PWD}/tmp \
+        -DoutputDirectory=${PWD}/tmp -P ${profile} \
         -DoverWriteReleases=true -DoverWriteSnapshots=true \
-        -Dmdep.stripVersion=true \
-        -DremoteRepositories=central::default::http://maven.nuxeo.org/nexus/content/groups/public,public-snapshot::default::http://maven.nuxeo.org/nexus/content/groups/public-snapshot
+        -Dmdep.stripVersion=true
     if [ "$?" != "0" ]; then
         rm -f tmp/nuxeo-server-tomcat.zip
         echo "ERROR: Unable to download distribution from maven"
