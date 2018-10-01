@@ -111,44 +111,44 @@ fi
 # Check requirements
 reqsok=true
 
-hash mvn &>/dev/null
+command -v mvn &>/dev/null
 CMDFOUND=$?
 if [[ -z "$distrib" && 0 -ne "$CMDFOUND" ]]; then
     reqsok=false
     echo "Missing: mvn (package maven)"
 fi
-hash wget &>/dev/null
+command -v wget &>/dev/null
 CMDFOUND=$?
 if [[ $distrib == *"://"* && 0 -ne "$CMDFOUND" ]]; then
     reqsok=false
     echo "Missing: wget (package wget)"
 fi
-hash packer &>/dev/null
+command -v packer &>/dev/null
 CMDFOUND=$?
 if [ 0 -ne "$CMDFOUND" ]; then
     reqsok=false
     echo "Missing: packer (http://packer.io/)"
 fi
-hash qemu-img &>/dev/null
+command -v qemu-img &>/dev/null
 CMDFOUND=$?
 if [ 0 -ne "$CMDFOUND" ]; then
     reqsok=false
     echo "Missing: qemu-img (package qemu-utils)"
 fi
-hash zip &>/dev/null
+command -v zip &>/dev/null
 CMDFOUND=$?
 if [ 0 -ne "$CMDFOUND" ]; then
     reqsok=false
     echo "Missing: zip (package zip)"
 fi
 if [ "x$builder" == "xqemu" ]; then
-    hash kvm &>/dev/null
+    command -v kvm &>/dev/null
     CMDFOUND=$?
     if [ 0 -ne "$CMDFOUND" ]; then
         reqsok=false
         echo "Missing: kvm (package qemu-kvm)"
     fi
-    hash VBoxManage &>/dev/null
+    command -v VBoxManage &>/dev/null
     CMDFOUND=$?
     if [ 0 -ne "$CMDFOUND" ]; then
         reqsok=false
@@ -159,7 +159,7 @@ if [ "x$builder" == "xqemu" ]; then
     fi
 fi
 if [ "x$builder" == "xvmware" ]; then
-    hash vmrun &>/dev/null
+    command -v vmrun &>/dev/null
     CMDFOUND=$?
     if [ 0 -ne "$CMDFOUND" ]; then
         reqsok=false
@@ -167,7 +167,7 @@ if [ "x$builder" == "xvmware" ]; then
     fi
 fi
 if [ "x$builder" == "xvirtualbox" ]; then
-    hash VBoxManage &>/dev/null
+    command -v VBoxManage &>/dev/null
     CMDFOUND=$?
     if [ 0 -ne "$CMDFOUND" ]; then
         reqsok=false
