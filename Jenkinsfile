@@ -34,8 +34,9 @@ node('OLDJOYEUX') {
     timestamps {
         timeout(time: 240, unit: 'MINUTES') {
 
-            checkout poll: false, scm: [$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
-            userRemoteConfigs: [[url: 'git@github.com:nuxeo/nuxeo-packaging-vm.git']]]
+            checkout poll: false, scm: [$class: 'GitSCM', branches: [[name: '*/master']],
+            browser: [$class: 'GithubWeb', repoUrl: 'https://github.com/nuxeo/nuxeo-packaging-vm'], doGenerateSubmoduleConfigurations: false, extensions: [],
+            submoduleCfg: [], userRemoteConfigs: [[url: 'git@github.com:nuxeo/nuxeo-packaging-vm.git']]]
 	    sh '''
 		#!/bin/bash -ex
 
@@ -47,9 +48,7 @@ node('OLDJOYEUX') {
 		    DISTRIBUTION=""
 		fi
 
-                cd nuxeo-packaging-vm
                 rm -rf nuxeo-*-vm-*
-
                 ./build-vm.sh -v $NUXEO_VERSION $DISTRIBUTION -n
 
                 if [ "$PUBLISH_VM" = "true" ]; then
