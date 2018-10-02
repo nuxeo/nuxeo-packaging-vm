@@ -34,7 +34,7 @@ node('OLDJOYEUX') {
     timestamps {
         timeout(time: 240, unit: 'MINUTES') {
 
-            checkout poll: false, scm: [$class: 'GitSCM', branches: [[name: '*/master']],
+            checkout poll: false, scm: [$class: 'GitSCM', branches: [[name: '*/feature-NXBT-2399-split&fix']],
             browser: [$class: 'GithubWeb', repoUrl: 'https://github.com/nuxeo/nuxeo-packaging-vm'], doGenerateSubmoduleConfigurations: false, extensions: [],
             submoduleCfg: [], userRemoteConfigs: [[url: 'git@github.com:nuxeo/nuxeo-packaging-vm.git']]]
 	    sh '''
@@ -53,7 +53,6 @@ node('OLDJOYEUX') {
 
                 if [ "$PUBLISH_VM" = "true" ]; then
                     echo "*** "$(date +"%H:%M:%S")" Publishing VM to staging & Generating signatures"
-                    cd $WORKSPACE/nuxeo-packaging-vm
                     VM_LIST=$(find . -name 'nuxeo-*-vm-*.zip' -print)
                     for PKG in ${VM_LIST}; do
                             FILENAME=$(basename $PKG)
