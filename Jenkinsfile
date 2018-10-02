@@ -33,8 +33,9 @@ properties([[$class: 'BuildDiscarderProperty',
 node('OLDJOYEUX') {
     timestamps {
         timeout(time: 240, unit: 'MINUTES') {
-		checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'git@github.com:nuxeo/nuxeo-packaging-vm.git']]]
 
+            checkout poll: false, scm: [$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
+            userRemoteConfigs: [[url: 'git@github.com:nuxeo/nuxeo-packaging-vm.git']]]
 	    sh '''
 		#!/bin/bash -ex
 
